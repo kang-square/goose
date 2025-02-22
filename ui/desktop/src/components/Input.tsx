@@ -5,27 +5,21 @@ import { Attach, Send } from './icons';
 
 interface InputProps {
   handleSubmit: (e: React.FormEvent) => void;
-  disabled?: boolean;
   isLoading?: boolean;
   onStop?: () => void;
 }
 
-export default function Input({
-  handleSubmit,
-  disabled = false,
-  isLoading = false,
-  onStop,
-}: InputProps) {
+export default function Input({ handleSubmit, isLoading = false, onStop }: InputProps) {
   const [value, setValue] = useState('');
   // State to track if the IME is composing (i.e., in the middle of Japanese IME input)
   const [isComposing, setIsComposing] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (textAreaRef.current && !disabled) {
+    if (textAreaRef.current) {
       textAreaRef.current.focus();
     }
-  }, [disabled, value]);
+  }, [value]);
 
   const useAutosizeTextArea = (textAreaRef: HTMLTextAreaElement | null, value: string) => {
     useEffect(() => {
@@ -57,10 +51,17 @@ export default function Input({
   };
 
   const handleKeyDown = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Only trigger submit on Enter if not composing (IME input in progress) and shift is not pressed
-    if (evt.key === 'Enter' && !evt.shiftKey && !isComposing) {
+    if (evt.key === 'Enter') {
+      if (evt.shiftKey || isComposing) {
+        // Allow line break for Shift+Enter or during IME composition
+        return;
+      }
+
+      // Prevent default Enter behavior when loading or when not loading but has content
       evt.preventDefault();
-      if (value.trim()) {
+
+      // Only submit if not loading and has content
+      if (!isLoading && value.trim()) {
         handleSubmit(new CustomEvent('submit', { detail: { value } }));
         setValue('');
       }
@@ -69,7 +70,7 @@ export default function Input({
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (value.trim()) {
+    if (value.trim() && !isLoading) {
       handleSubmit(new CustomEvent('submit', { detail: { value } }));
       setValue('');
     }
@@ -97,7 +98,6 @@ export default function Input({
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         onKeyDown={handleKeyDown}
-        disabled={disabled}
         ref={textAreaRef}
         rows={1}
         style={{
@@ -105,19 +105,14 @@ export default function Input({
           maxHeight: `${maxHeight}px`,
           overflowY: 'auto',
         }}
-        className={`w-full outline-none border-none focus:ring-0 bg-transparent p-0 text-base resize-none text-textStandard ${
-          disabled ? 'cursor-not-allowed opacity-50' : ''
-        }`}
+        className="w-full outline-none border-none focus:ring-0 bg-transparent p-0 text-base resize-none text-textStandard"
       />
       <Button
         type="button"
         size="icon"
         variant="ghost"
         onClick={handleFileSelect}
-        disabled={disabled}
-        className={`absolute right-[40px] top-1/2 -translate-y-1/2 text-textSubtle hover:text-textStandard ${
-          disabled ? 'text-textSubtle cursor-not-allowed' : ''
-        }`}
+        className="absolute right-[40px] top-1/2 -translate-y-1/2 text-textSubtle hover:text-textStandard"
       >
         <Attach />
       </Button>
@@ -136,9 +131,9 @@ export default function Input({
           type="submit"
           size="icon"
           variant="ghost"
-          disabled={disabled || !value.trim()}
+          disabled={!value.trim()}
           className={`absolute right-2 top-1/2 -translate-y-1/2 text-textSubtle hover:text-textStandard ${
-            disabled || !value.trim() ? 'text-textSubtle cursor-not-allowed' : ''
+            !value.trim() ? 'text-textSubtle cursor-not-allowed' : ''
           }`}
         >
           <Send />
