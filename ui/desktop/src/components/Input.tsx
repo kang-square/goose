@@ -123,7 +123,11 @@ export default function Input({ handleSubmit, isLoading = false, onStop }: Input
           type="button"
           size="icon"
           variant="ghost"
-          onClick={onStop}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onStop();
+          }}
           className="absolute right-2 top-1/2 -translate-y-1/2 [&_svg]:size-5 text-textSubtle hover:text-textStandard"
         >
           <Stop size={24} />
