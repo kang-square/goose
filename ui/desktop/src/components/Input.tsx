@@ -52,12 +52,14 @@ export default function Input({ handleSubmit, isLoading = false, onStop }: Input
 
   const handleKeyDown = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (evt.key === 'Enter') {
+      // should not trigger submit on Enter if it's composing (IME input in progress) or shift is pressed
       if (evt.shiftKey || isComposing) {
         // Allow line break for Shift+Enter or during IME composition
         return;
       }
 
       // Prevent default Enter behavior when loading or when not loading but has content
+      // So it won't trigger a new line
       evt.preventDefault();
 
       // Only submit if not loading and has content
