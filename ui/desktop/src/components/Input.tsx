@@ -17,6 +17,7 @@ export default function Input({
   commandHistory = [],
 }: InputProps) {
   const [value, setValue] = useState('');
+  // State to track if the IME is composing (i.e., in the middle of Japanese IME input)
   const [isComposing, setIsComposing] = useState(false);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [savedInput, setSavedInput] = useState('');
