@@ -278,7 +278,16 @@ export default function ChatView({
 
         <div className="relative">
           {isLoading && <LoadingGoose />}
-          <Input handleSubmit={handleSubmit} isLoading={isLoading} onStop={onStopGoose} />
+          <Input
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+            onStop={onStopGoose}
+            commandHistory={filteredMessages
+              .filter((m) => isUserMessage(m))
+              .map((m) => m.content.find((c) => c.type === 'text')?.text || '')
+              .filter((text) => text.trim())
+              .reverse()}
+          />
           <BottomMenu hasMessages={hasMessages} setView={setView} />
         </div>
       </Card>
