@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { getApiUrl } from '../config';
 import { generateSessionId } from '../sessions';
 import BottomMenu from './BottomMenu';
@@ -226,6 +226,20 @@ export default function ChatView({
     return true;
   };
 
+  const commandHistory = useMemo(() => {
+    return filteredMessages
+      .reduce<string[]>((history, message) => {
+        if (isUserMessage(message)) {
+          const text = message.content.find((c) => c.type === 'text')?.text?.trim();
+          if (text) {
+            history.push(text);
+          }
+        }
+        return history;
+      }, [])
+      .reverse();
+  }, [filteredMessages, isUserMessage]);
+
   return (
     <div className="flex flex-col w-full h-screen items-center justify-center">
       <div className="relative flex items-center h-[36px] w-full bg-bgSubtle border-b border-borderSubtle">
@@ -282,11 +296,7 @@ export default function ChatView({
             handleSubmit={handleSubmit}
             isLoading={isLoading}
             onStop={onStopGoose}
-            commandHistory={filteredMessages
-              .filter((m) => isUserMessage(m))
-              .map((m) => m.content.find((c) => c.type === 'text')?.text || '')
-              .filter((text) => text.trim())
-              .reverse()}
+            commandHistory={commandHistory}
           />
           <BottomMenu hasMessages={hasMessages} setView={setView} />
         </div>

@@ -57,38 +57,42 @@ export default function Input({
     setIsComposing(false);
   };
 
+  const handleHistoryNavigation = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    evt.preventDefault();
+
+    // Save current input if we're just starting to navigate history
+    if (historyIndex === -1) {
+      setSavedInput(value);
+    }
+
+    // Calculate new history index
+    let newIndex = historyIndex;
+    if (evt.key === 'ArrowUp') {
+      // Move backwards through history
+      if (historyIndex < commandHistory.length - 1) {
+        newIndex = historyIndex + 1;
+      }
+    } else {
+      // Move forwards through history
+      if (historyIndex > -1) {
+        newIndex = historyIndex - 1;
+      }
+    }
+
+    // Update index and value
+    setHistoryIndex(newIndex);
+    if (newIndex === -1) {
+      // Restore saved input when going past the end of history
+      setValue(savedInput);
+    } else {
+      setValue(commandHistory[newIndex] || '');
+    }
+  };
+
   const handleKeyDown = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Handle command history navigation
     if ((evt.metaKey || evt.ctrlKey) && (evt.key === 'ArrowUp' || evt.key === 'ArrowDown')) {
-      evt.preventDefault();
-
-      // Save current input if we're just starting to navigate history
-      if (historyIndex === -1) {
-        setSavedInput(value);
-      }
-
-      // Calculate new history index
-      let newIndex = historyIndex;
-      if (evt.key === 'ArrowUp') {
-        // Move backwards through history
-        if (historyIndex < commandHistory.length - 1) {
-          newIndex = historyIndex + 1;
-        }
-      } else {
-        // Move forwards through history
-        if (historyIndex > -1) {
-          newIndex = historyIndex - 1;
-        }
-      }
-
-      // Update index and value
-      setHistoryIndex(newIndex);
-      if (newIndex === -1) {
-        // Restore saved input when going past the end of history
-        setValue(savedInput);
-      } else {
-        setValue(commandHistory[newIndex] || '');
-      }
+      handleHistoryNavigation(evt);
       return;
     }
 
